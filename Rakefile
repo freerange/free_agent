@@ -32,7 +32,7 @@ spec = Gem::Specification.new do |s|
   
   # If you want to depend on other gems, add them here, along with any
   # relevant versions
-  s.add_dependency("restclient")
+  s.add_dependency("rest-client")
   s.add_dependency("crack")
   s.add_dependency("mash")
   s.add_dependency("activesupport")
