@@ -1,6 +1,10 @@
 require 'restclient'
 require 'crack'
 require 'mash'
+
+# see https://rails.lighthouseapp.com/projects/8994/tickets/5630
+require 'active_support/lazy_load_hooks'
+
 require 'active_support/core_ext/string'
 require 'active_support/core_ext/object/returning'
 require 'active_support/core_ext/hash'
