@@ -54,11 +54,22 @@ module FreeAgent
         options[:view] = "#{options[:from].strftime('%Y-%m-%d')}_#{options[:to].strftime('%Y-%m-%d')}"
       end
 
-      Collection.new(@resource["/users/#{user_id}/expenses?view=#{options[:view]}"], :entity => :expense)
+      Collection.new(@resource["/users/#{user_id}/expenses?view=#{options[:view]}"], :entity => :expense, :key => [:bank_account_entries, :bank_transactions, :bank_transaction])
     end
 
     def bank_accounts
       @bank_accounts ||= Collection.new(@resource['/bank_accounts'], :entity => :bank_account, :key => :records)
+    end
+
+    def bank_transactions(bank_account_id, options={})
+      options.assert_valid_keys(:view, :from, :to)
+      options.reverse_merge!(:view => 'recent')
+
+      if options[:from] && options[:to]
+        options[:view] = "#{options[:from].strftime('%Y-%m-%d')}_#{options[:to].strftime('%Y-%m-%d')}"
+      end
+
+      Collection.new(@resource["/bank_accounts/#{bank_account_id}/bank_account_entries?view=#{options[:view]}"], :entity => :bank_transaction, :key => [:bank_account_entries, :bank_transactions, :bank_transaction])
     end
   end
 
@@ -68,9 +79,7 @@ module FreeAgent
     def initialize(resource, options={})
       @resource = resource
       @entity = options.delete(:entity)
-      @key = options.delete(:key) || @entity.to_s.pluralize
-      @sub_key = options.delete(:sub_key)
-      @sub_sub_key = options.delete(:sub_sub_key)
+      @key = [options.delete(:key) || @entity.to_s.pluralize].flatten
       @entity_klass = "FreeAgent::#{@entity.to_s.classify}".constantize
     end
 
@@ -99,13 +108,11 @@ module FreeAgent
       end
       case (response = resource.get).code
       when 200
-        hash = Crack::XML.parse(response)
-        entities = hash[@key.to_s]
-        return [] unless entities
-        entities = entities[@sub_key.to_s] if @sub_key
-        return [] unless entities
-        entities = entities[@sub_sub_key.to_s] if @sub_sub_key
-        return [] unless entities
+        entities = Crack::XML.parse(response)
+        @key.each do |key|
+          entities = entities[key.to_s]
+          return [] unless entities
+        end
         entities.map do |attributes|
           entity_for_id(attributes['id'], attributes)
         end
@@ -144,10 +151,9 @@ module FreeAgent
 
   class Entity
     def self.has_many(things, options={})
-      path = options.delete(:path) || "/#{things}"
       options.reverse_merge!(:entity => things.to_s.singularize)
       define_method(things) do
-        Collection.new(@resource[path], options)
+        Collection.new(@resource["/#{things}"], options)
       end
     end
 
@@ -267,7 +273,6 @@ module FreeAgent
   end
 
   class BankAccount < Entity
-    has_many :bank_transactions, :path => '/bank_account_entries', :entity => :bank_transaction, :key => :bank_account_entries, :sub_key => :bank_transactions, :sub_sub_key => :bank_transaction
   end
 
   class BankTransaction < Entity
