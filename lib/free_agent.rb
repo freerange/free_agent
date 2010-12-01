@@ -47,13 +47,7 @@ module FreeAgent
     end
 
     def expenses(user_id, options={})
-      options.assert_valid_keys(:view, :from, :to)
-      options.reverse_merge!(:view => 'recent')
-
-      if options[:from] && options[:to]
-        options[:view] = "#{options[:from].strftime('%Y-%m-%d')}_#{options[:to].strftime('%Y-%m-%d')}"
-      end
-
+      convert_date_range!(options)
       Collection.new(@resource["/users/#{user_id}/expenses?view=#{options[:view]}"], :entity => :expense, :key => [:bank_account_entries, :bank_transactions, :bank_transaction])
     end
 
@@ -62,14 +56,19 @@ module FreeAgent
     end
 
     def bank_transactions(bank_account_id, options={})
+      convert_date_range!(options)
+      Collection.new(@resource["/bank_accounts/#{bank_account_id}/bank_account_entries?view=#{options[:view]}"], :entity => :bank_transaction, :key => [:bank_account_entries, :bank_transactions, :bank_transaction])
+    end
+
+    private
+
+    def convert_date_range!(options)
       options.assert_valid_keys(:view, :from, :to)
       options.reverse_merge!(:view => 'recent')
 
       if options[:from] && options[:to]
         options[:view] = "#{options[:from].strftime('%Y-%m-%d')}_#{options[:to].strftime('%Y-%m-%d')}"
       end
-
-      Collection.new(@resource["/bank_accounts/#{bank_account_id}/bank_account_entries?view=#{options[:view]}"], :entity => :bank_transaction, :key => [:bank_account_entries, :bank_transactions, :bank_transaction])
     end
   end
 
