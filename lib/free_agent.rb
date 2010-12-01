@@ -56,6 +56,10 @@ module FreeAgent
 
       Collection.new(@resource["/users/#{user_id}/expenses?view=#{options[:view]}"], :entity => :expense)
     end
+
+    def bank_accounts
+      @bank_accounts ||= Collection.new(@resource['/bank_accounts'], :entity => :bank_account, :key => :records)
+    end
   end
 
   class Collection
@@ -64,6 +68,9 @@ module FreeAgent
     def initialize(resource, options={})
       @resource = resource
       @entity = options.delete(:entity)
+      @key = options.delete(:key) || @entity.to_s.pluralize
+      @sub_key = options.delete(:sub_key)
+      @sub_sub_key = options.delete(:sub_sub_key)
       @entity_klass = "FreeAgent::#{@entity.to_s.classify}".constantize
     end
 
@@ -92,12 +99,15 @@ module FreeAgent
       end
       case (response = resource.get).code
       when 200
-        if entities = Crack::XML.parse(response)[@entity.to_s.pluralize]
-          entities.map do |attributes|
-            entity_for_id(attributes['id'], attributes)
-          end
-        else
-          []
+        hash = Crack::XML.parse(response)
+        entities = hash[@key.to_s]
+        return [] unless entities
+        entities = entities[@sub_key.to_s] if @sub_key
+        return [] unless entities
+        entities = entities[@sub_sub_key.to_s] if @sub_sub_key
+        return [] unless entities
+        entities.map do |attributes|
+          entity_for_id(attributes['id'], attributes)
         end
       end
     end
@@ -133,9 +143,11 @@ module FreeAgent
   end
 
   class Entity
-    def self.has_many(things)
+    def self.has_many(things, options={})
+      path = options.delete(:path) || "/#{things}"
+      options.reverse_merge!(:entity => things.to_s.singularize)
       define_method(things) do
-        Collection.new(@resource["/#{things}"], :entity => things.to_s.singularize)
+        Collection.new(@resource[path], options)
       end
     end
 
@@ -252,5 +264,12 @@ module FreeAgent
   end
 
   class Attachment < Entity
+  end
+
+  class BankAccount < Entity
+    has_many :bank_transactions, :path => '/bank_account_entries', :entity => :bank_transaction, :key => :bank_account_entries, :sub_key => :bank_transactions, :sub_sub_key => :bank_transaction
+  end
+
+  class BankTransaction < Entity
   end
 end
