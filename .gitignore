@@ -2,5 +2,4 @@ pkg
 doc
 .DS_Store
 rdoc
-*.gemspec
 config.yml
