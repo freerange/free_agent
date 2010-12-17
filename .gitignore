@@ -3,4 +3,4 @@ doc
 .DS_Store
 rdoc
 *.gemspec
-examples/config.yml
+config.yml
