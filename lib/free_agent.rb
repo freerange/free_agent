@@ -65,6 +65,11 @@ module FreeAgent
       Collection.new(@resource["/bank_accounts/#{bank_account_id}/bank_account_entries?view=#{options[:view]}"], :entity => :bank_transaction, :key => [:bank_account_entries, :bank_transactions, :bank_transaction])
     end
 
+    def dividends(options={})
+      convert_date_range!(options)
+      @dividends ||= Collection.new(@resource["/accounting/dividends/#{options[:view]}"], :entity => :bank_account_entry, :key => [:bank_account_entries])
+    end
+
     private
 
     def convert_date_range!(options)
@@ -280,5 +285,11 @@ module FreeAgent
   end
 
   class BankTransaction < Entity
+    has_many :bank_account_entries
+  end
+
+  class BankAccountEntry < Entity
+    belongs_to :bank_account
+    belongs_to :bank_transaction
   end
 end
