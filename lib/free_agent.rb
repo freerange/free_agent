@@ -285,7 +285,6 @@ module FreeAgent
   end
 
   class BankTransaction < Entity
-    has_many :bank_account_entries
   end
 
   class BankAccountEntry < Entity
