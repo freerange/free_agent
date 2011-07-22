@@ -119,7 +119,7 @@ module FreeAgent
       when 200
         entities = Crack::XML.parse(response)
         @key.each do |key|
-          entities = entities[key.to_s]
+          entities = [key, :objects].map { |k| entities[k.to_s] }.compact.first
           return [] unless entities
         end
         entities.map do |attributes|
