@@ -41,8 +41,9 @@ module FreeAgent
       @users ||= Collection.new(@resource['/company/users'], :entity => :user)
     end
 
-    def bills(from_to_date)
-      @bills ||= Collection.new(@resource["/bills?view=#{from_to_date}"], :entity => :bill)
+    def bills(options={})
+      convert_date_range!(options)
+      @bills ||= Collection.new(@resource["/bills?view=#{options[:view]}"], :entity => :bill)
     end
 
     # Note, this is only for PUT/POSTing to
