@@ -1,6 +1,6 @@
 require 'restclient'
 require 'crack'
-require 'mash'
+require 'hashie'
 
 # see https://rails.lighthouseapp.com/projects/8994/tickets/5630
 require 'active_support/lazy_load_hooks'
@@ -181,7 +181,7 @@ module FreeAgent
 
     def initialize(resource, attributes = {})
       @resource = resource
-      @attributes = attributes.to_mash
+      @attributes = Hashie::Mash.new(attributes)
     end
 
     def id
@@ -194,7 +194,7 @@ module FreeAgent
 
     def reload
       returning(self) do
-        @attributes = Crack::XML.parse(@resource.get)[xml_name].to_mash
+        @attributes = Hashie::Mash.new(Crack::XML.parse(@resource.get)[xml_name])
       end
     end
 
