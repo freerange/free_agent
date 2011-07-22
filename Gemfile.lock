@@ -22,9 +22,5 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  activesupport
-  crack
   free_agent!
   i18n
-  mash
-  rest-client
