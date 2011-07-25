@@ -1,3 +1,5 @@
+require "active_support/inflections"
+
 module FreeAgent
   class Collection
     include Enumerable
