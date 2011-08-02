@@ -9,7 +9,7 @@ config = YAML.load(File.open("config.yml"))
 FreeRange = FreeAgent::Company.new(config[:domain], config[:username], config[:password])
 FreeRange.bank_accounts.each do |account|
   FreeRange.bank_transactions(account.id, :from => Date.parse("2010-10-31"), :to => Date.today).each do |transaction|
-    if transaction.name[/USD|\$/]
+    if %r{USD|\$}.match(transaction.name)
       transaction.bank_account_entries.each do |entry|
         if entry.sales_tax_rate > 0
           successful = false
