@@ -34,7 +34,7 @@ module FreeAgent
     end
 
     def reload
-      returning(self) do
+      tap do
         @attributes = Hashie::Mash.new(Crack::XML.parse(@resource.get)[xml_name])
       end
     end

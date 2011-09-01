@@ -6,7 +6,6 @@ require 'hashie'
 require 'active_support/lazy_load_hooks'
 
 require 'active_support/core_ext/string'
-require 'active_support/core_ext/object/returning'
 require 'active_support/core_ext/hash'
 require 'cgi'
 
