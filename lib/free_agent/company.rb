@@ -24,8 +24,12 @@ module FreeAgent
     end
 
     def bills(options={})
-      convert_date_range!(options)
-      @bills ||= Collection.new(@resource["/bills?view=#{options[:view]}"], :entity => :bill)
+      if options.empty? && @bills
+        @bills
+      else
+        convert_date_range!(options)
+        @bills = Collection.new(@resource["/bills?view=#{options[:view]}"], :entity => :bill)
+      end
     end
 
     # Note, this is only for PUT/POSTing to
@@ -48,8 +52,12 @@ module FreeAgent
     end
 
     def dividends(options={})
-      convert_date_range!(options)
-      @dividends ||= Collection.new(@resource["/accounting/dividends/#{options[:view]}"], :entity => :bank_account_entry, :key => [:bank_account_entries])
+      if options.empty? && @dividends
+        @dividends
+      else
+        convert_date_range!(options)
+        @dividends ||= Collection.new(@resource["/accounting/dividends/#{options[:view]}"], :entity => :bank_account_entry, :key => [:bank_account_entries])
+      end
     end
 
     private
