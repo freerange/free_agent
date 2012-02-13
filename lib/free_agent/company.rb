@@ -38,7 +38,7 @@ module FreeAgent
     end
 
     def expenses(user_id, options={})
-      convert_date_range!(options)
+      convert_date_range_with_recent_default!(options)
       Collection.new(@resource["/users/#{user_id}/expenses?view=#{options[:view]}"], :entity => :expense, :key => [:bank_account_entries, :bank_transactions, :bank_transaction])
     end
 
@@ -47,7 +47,7 @@ module FreeAgent
     end
 
     def bank_transactions(bank_account_id, options={})
-      convert_date_range!(options)
+      convert_date_range_with_recent_default!(options)
       Collection.new(@resource["/bank_accounts/#{bank_account_id}/bank_account_entries?view=#{options[:view]}"], :entity => :bank_transaction, :key => [:bank_account_entries, :bank_transactions, :bank_transaction])
     end
 
@@ -55,16 +55,20 @@ module FreeAgent
       if options.empty? && @dividends
         @dividends
       else
-        convert_date_range!(options)
+        convert_date_range_with_recent_default!(options)
         @dividends ||= Collection.new(@resource["/accounting/dividends/#{options[:view]}"], :entity => :bank_account_entry, :key => [:bank_account_entries])
       end
     end
 
     private
 
+    def convert_date_range_with_recent_default!(options)
+      options.reverse_merge!(:view => 'recent')
+      convert_date_range!(options)
+    end
+
     def convert_date_range!(options)
       options.assert_valid_keys(:view, :from, :to)
-      options.reverse_merge!(:view => 'recent')
 
       if options[:from] && options[:to]
         options[:view] = "#{options[:from].strftime('%Y-%m-%d')}_#{options[:to].strftime('%Y-%m-%d')}"
