@@ -2,7 +2,7 @@ module FreeAgent
   class Company
     def initialize(domain, username, password)
       @resource = RestClient::Resource.new(
-        "https://#{domain}.freeagentcentral.com",
+        "https://#{domain}.freeagent.com",
         :user => username, :password => password
       )
     end
